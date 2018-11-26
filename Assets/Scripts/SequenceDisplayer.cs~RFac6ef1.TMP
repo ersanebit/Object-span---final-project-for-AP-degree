@@ -1,0 +1,136 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using System.Linq;
+
+public class SequenceDisplayer : MonoBehaviour
+{
+    List<int> solution = new List<int>();
+    List<int> input = new List<int>();
+    public Text label;
+    public float digitDuration = 1f;
+    public bool allowUserInput = false;
+    public int level = 1;
+
+    void Start()
+    {
+        Debug.LogFormat(this, "[SequenceDisplayer2] Start");
+        StartLevel();
+    }
+
+    void StartLevel()
+    {
+        Debug.LogFormat(this, "[SequenceDisplayer2] Start Level");
+        input.Clear();
+        int solutionLength = GetSolutionLengthForLevel(level);
+        GenerateSolution(solutionLength);
+        StartCoroutine(ShowSolutionSequenceCoroutine());
+    }
+
+    int GetSolutionLengthForLevel(int level)
+    {
+        return level + 1;
+    }
+
+    void GenerateSolution(int solutionLength)
+    {
+        Debug.LogFormat(this, "[SequenceDisplayer2] GenerateSolution({0})", solutionLength);
+        solution.Clear();
+        for (int i = 0; i < solutionLength; i++)
+        {
+            int digit = Random.Range(0, 10);
+            solution.Add(digit);
+        }
+    }
+
+    IEnumerator ShowSolutionSequenceCoroutine()
+    {
+        Debug.LogFormat(this, "[SequenceDisplayer2] Show solution sequence coroutine");
+        SetAllowUserInput(false); // Do not allow user input while we show the sequence
+        foreach (var digit in solution)
+        {
+            ShowDigit(digit); // Show a single digit from the solution
+            yield return new WaitForSeconds(digitDuration); // Wait until showing next digit
+        }
+        ClearDigitLabel(); // Dont show the last digit after the wait
+        SetAllowUserInput(true); // After showing the solution, allow user input again
+    }
+
+    void ShowDigit(int digit)
+    {
+        label.text = digit.ToString();
+        Debug.LogFormat(this, "[SequenceDisplayer2] ShowDigit: {0}", digit);
+    }
+
+    void ClearDigitLabel()
+    {
+        label.text = "";
+        Debug.LogFormat(this, "[SequenceDisplayer2] Clear Digit Label");
+    }
+
+    void SetAllowUserInput(bool inputAllowed)
+    {
+        allowUserInput = inputAllowed;
+        Debug.LogFormat(this, "[SequenceDisplayer2] ChangeUserInput: Allowed = {0}", allowUserInput);
+    }
+
+    public void PressDigit(int digitPressed)
+    {
+        if (allowUserInput == false)
+        {
+            Debug.LogFormat(this, "[SequenceDisplayer2] Blocked Press Digit, user input is not allowed!");
+            return; // User not allowed to press yet
+        }
+        input.Add(digitPressed);
+        Debug.LogFormat(this, "[SequenceDisplayer2] Press digit: {0}", digitPressed);
+        if (RequireAdditionalInputDigits() == false)
+        {
+            bool solutionIsCorrect = CheckSolution();
+            if (solutionIsCorrect)
+            {
+                // Transforms the lists of integers into arrays of strings (so that we can use string.Join() to collapse list into a single string)
+                // [1,2,3,4] => "1234"
+                string solutionString = string.Join("", solution.Select(d => d.ToString()).ToArray());
+                string inputString = string.Join("", input.Select(d => d.ToString()).ToArray());
+                Debug.LogFormat(this, "[SequenceDisplayer2] Input is correct! Solution: {0}, Input: {1}", solutionString, inputString);
+                LevelSuccess();
+            }
+        }
+    }
+
+    bool RequireAdditionalInputDigits()
+    {
+        if (input.Count < solution.Count) // We havent given enough input digits yet
+        {
+            return true; // We need more
+        }
+        return false;
+    }
+
+    bool CheckSolution()
+    {
+        if (solution.Count != input.Count) // Solution and input arent even the same length
+        {
+            return false; // They can never match
+        }
+
+        for (int i = 0; i < solution.Count; i++)
+        {
+            int solutionDigit = solution[i];
+            int inputDigit = input[i];
+            if (inputDigit != solutionDigit) // Input digit doesnt match solution digit
+            {
+                return false; // Input doesnt match
+            }
+        }
+        return true;
+    }
+
+    void LevelSuccess()
+    {
+        Debug.LogFormat(this, "[SequenceDisplayer2] Level Success");
+        level++; // Advance to next level
+        StartLevel(); // Start the next level
+    }
+}
