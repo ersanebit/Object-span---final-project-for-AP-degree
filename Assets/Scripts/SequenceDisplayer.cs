@@ -30,13 +30,29 @@ public class SequenceDisplayer : MonoBehaviour
 	float whatWasThisFor = 2f;
 
 	[Header("Bindings")]
-    public Text label;
+    public Image label;
 	public Text checkMark;  
     public Text noOfDigits;
     public Text failMessage;
     public Text reverseMessage;
     public Text gameOverMessage;
 
+    [Header("Images")]
+    public Sprite Image1;
+    public Sprite Image2;
+    public Sprite Image3;
+    public Sprite Image4;
+    public Sprite Image5;
+    public Sprite Image6;
+    public Sprite Image7;
+    public Sprite Image8;
+    public Sprite Image9;
+    public Sprite Image10;
+    public Sprite empty;
+    public Sprite x;
+    public Sprite v;
+    public Sprite[] pics;
+    
 
     SessionState sessionState = new SessionState();
 
@@ -53,6 +69,20 @@ public class SequenceDisplayer : MonoBehaviour
         Debug.LogFormat("Session GUID: {0}", sessionState.sessionGuid);     
         var levelState = sessionState.CreateNewLevelState();
         StartLevel(levelState);
+
+        pics = new Sprite[10];
+            
+        pics[1] = Image1;
+        pics[2] = Image2;
+        pics[3] = Image3;
+        pics[4] = Image4;
+        pics[5] = Image5;
+        pics[6] = Image6;
+        pics[7] = Image7;
+        pics[8] = Image8;
+        pics[9] = Image9;
+        pics[0] = Image10;
+        
     }
 
     void StartLevel(LevelState levelState)
@@ -99,7 +129,7 @@ public class SequenceDisplayer : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         Debug.Log("Now you ll be redirected to the reverse order game");
-        label.text = "";
+        label.sprite = empty;
         reverseMessage.text = "Reverse \nmode";
 
         Debug.LogFormat(this, "[SequenceDisplayer] Showing solution in reverse order");
@@ -154,7 +184,7 @@ public class SequenceDisplayer : MonoBehaviour
                         int digitSpanResult = successCounter + 1;
                         // Results of the user game
                         failMessage.text = "Your digit span is: " + digitSpanResult.ToString();
-                        label.text = "";
+                        label.sprite = empty;
                         gameOverMessage.text = "Game\nOver";
                         yield return new WaitForSeconds(2f);
 	                    Debug.Log("The end");
@@ -180,14 +210,14 @@ public class SequenceDisplayer : MonoBehaviour
 
     void ShowDigit(int digit)   
     {
-        label.text = digit.ToString();
+        label.sprite = pics[digit];
         Debug.LogFormat(this, "[SequenceDisplayer] ShowDigit: {0}", digit);
     }
 
     void ClearDigitLabel()
     {
-        label.text = "";
-       // Debug.LogFormat(this, "[SequenceDisplayer] Clear Digit Label");
+        label.sprite = empty;
+        // Debug.LogFormat(this, "[SequenceDisplayer] Clear Digit Label");
     }
 
     void SetAllowUserInput(LevelState levelState, bool inputAllowed)
@@ -280,9 +310,9 @@ public class SequenceDisplayer : MonoBehaviour
 
     IEnumerator showXmark()  // show "X" mark after a failed level
     {
-        label.text = "X";
+        label.sprite = x;
         yield return new WaitForSeconds(1f);
-        label.text = "";
+        label.sprite = empty;
     }
 
     bool CheckSolution(LevelState levelState)
