@@ -20,6 +20,7 @@ public class Login : MonoBehaviour {
 		loginPlayerBtn.onClick.AddListener(Log);
     }
 
+
     public void Log()
     {
         StartCoroutine(CheckDatabase());
@@ -37,6 +38,7 @@ public class Login : MonoBehaviour {
         Debug.LogWarning(www.text);
         if(www.text == "login success")
         {
+            PlayerPrefs.SetString("user", Username);
             MENU_ACTION_Scene(Scene);
         }
         

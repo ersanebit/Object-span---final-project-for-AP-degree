@@ -24,6 +24,7 @@ public class SequenceDisplayer : MonoBehaviour
 	[SerializeField]
 	int seed = 0;		// chortorn will implement this or show and tell Ersan how to do it.
     public int successCounter = 0; // how many answers were correct per gameMode
+    public Text Username;
 
 	[Header("Config - Time")]
 	[SerializeField]
@@ -188,7 +189,8 @@ public class SequenceDisplayer : MonoBehaviour
                         gameOverMessage.text = "Game\nOver";
                         yield return new WaitForSeconds(2f);
 	                    Debug.Log("The end");
-	                    ExitApplication();
+                        StartCoroutine(RegisterToDBSession(sessionState.levelFailsInARow));
+                        ExitApplication();
 	                }
 	            }
 	        }
@@ -206,6 +208,19 @@ public class SequenceDisplayer : MonoBehaviour
         SetAllowUserInput(levelState, true); // After showing the solution, allow user input again
     }
 
+
+    IEnumerator RegisterToDBSession(int levelFail)
+    {
+
+        string url = "http://localhost/accounts/savesession.php";
+        WWWForm form = new WWWForm();
+        form.AddField("usernamePost", Username.text);
+        form.AddField("guidPost", sessionState.sessionGuid.ToString());
+        form.AddField("levelFailPost", levelFail);
+
+        WWW www = new WWW(url, form);
+        yield return www;
+    }
 
 
     void ShowDigit(int digit)   
@@ -265,13 +280,13 @@ public class SequenceDisplayer : MonoBehaviour
             }
             else
             {
-                LevelFail(levelState);
+                LevelFail(levelState,solutionString,inputString);
             }
         }
     }
 
  
-    void LevelFail(LevelState levelState)
+    void LevelFail(LevelState levelState, string solutionString, string inputString)
     {
         levelState.endedTimestamp = System.DateTime.UtcNow;
        
@@ -288,14 +303,32 @@ public class SequenceDisplayer : MonoBehaviour
             conditionForBackwardsGameMode = true;
            
         }
-        
 
+        StartCoroutine(RegisterToDBLevel(levelState, solutionString, inputString, 0));
         Debug.Log("Fail.");
         Debug.LogFormat("Level ended at: {0}", levelState.endedTimestamp);
         var nextLevelState = sessionState.CreateNewLevelState(); 
         StartLevel(nextLevelState);
-    } 
-     
+    }
+
+    
+
+    IEnumerator RegisterToDBLevel(LevelState levelState, string solutionString, string inputString, int levelSucc)
+    {
+        string url = "http://localhost/accounts/savelevel.php";
+        WWWForm form = new WWWForm();
+        form.AddField("usernamePost", Username.text);
+        form.AddField("solutionPost", solutionString);
+        form.AddField("inputPost", inputString);
+        form.AddField("levelPost", levelSucc);
+        form.AddField("gamePost", levelState.gameMode.ToString());
+        form.AddField("startedPost", levelState.startedTimestamp.ToString());
+        form.AddField("endedPost", levelState.endedTimestamp.ToString());
+
+        WWW www = new WWW(url, form);
+        yield return www;
+    }
+
 
     bool RequireAdditionalInputDigits(LevelState levelState)
     {
@@ -339,6 +372,9 @@ public class SequenceDisplayer : MonoBehaviour
 
     void LevelSuccess(LevelState levelState)
     {
+        string solutionString = string.Join("", levelState.solution.Select(d => d.ToString()).ToArray());
+        string inputString = string.Join("", levelState.input.Select(d => d.ToString()).ToArray());
+
         levelState.endedTimestamp = System.DateTime.UtcNow;
         levelState.levelSuccess = true;
         
@@ -350,12 +386,14 @@ public class SequenceDisplayer : MonoBehaviour
         
 		sessionState.levelFailsInARow = 0;
 
+        StartCoroutine(RegisterToDBLevel(levelState, solutionString, inputString, 1));
         var nextLevelState = sessionState.CreateNewLevelState();
         StartLevel(nextLevelState); // Start the next level
     }
 
     public void ExitApplication()
     {
+        
         Application.Quit();
 		#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
