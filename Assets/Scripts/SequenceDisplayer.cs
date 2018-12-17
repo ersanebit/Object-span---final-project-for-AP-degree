@@ -110,19 +110,19 @@ public class SequenceDisplayer : MonoBehaviour
 
         for (int i = 0; i < solutionLength; i++)
         {
-            int digit = Random.Range(0, 10);
+            int gameObject = Random.Range(0, 10);
             if (successCounter > 9) {
-                levelState.solution.Add(digit);
+                levelState.solution.Add(gameObject);
                 continue;
             }
 
-            else if (levelState.solution.Contains(digit))
+            else if (levelState.solution.Contains(gameObject))
             {
                 i--;
                 continue; // this forces the next iteration to take place, skipping any code in between
             }
 
-            levelState.solution.Add(digit);
+            levelState.solution.Add(gameObject);
         }
     }
 
@@ -135,10 +135,10 @@ public class SequenceDisplayer : MonoBehaviour
 
         Debug.LogFormat(this, "[SequenceDisplayer] Showing solution in reverse order");
         yield return new WaitForSeconds(1f);
-        int digitSpanResult = successCounter + 1;
+        int objectSpanResult = successCounter + 1;
 
         // Results of the user game
-        failMessage.text = "Your digit span is: " + digitSpanResult.ToString();   
+        failMessage.text = "Your gameObject span is: " + objectSpanResult.ToString();   
         yield return new WaitForSeconds(2f);
         failMessage.text = " ";
         successCounter = 0;
@@ -182,9 +182,9 @@ public class SequenceDisplayer : MonoBehaviour
 
 	                if (gameOverCount == 2)
 	                {
-                        int digitSpanResult = successCounter + 1;
+                        int objectSpanResult = successCounter + 1;
                         // Results of the user game
-                        failMessage.text = "Your digit span is: " + digitSpanResult.ToString();
+                        failMessage.text = "Your gameObject span is: " + objectSpanResult.ToString();
                         label.sprite = empty;
                         gameOverMessage.text = "Game\nOver";
                         yield return new WaitForSeconds(2f);
@@ -199,12 +199,12 @@ public class SequenceDisplayer : MonoBehaviour
         Debug.LogFormat(this, "[SequenceDisplayer] Show solution sequence coroutine, game mode: {0}", levelState.gameMode);
         SetAllowUserInput(levelState, false); // Do not allow user input while we show the sequence
         yield return new WaitForSeconds(whatWasThisFor);
-        foreach (var digit in copySolution)
+        foreach (var gameObject in copySolution)
         {
-            ShowDigit(digit); // Show a single digit from the solution
-            yield return new WaitForSeconds(levelState.digitDuration); // Wait until showing next digit
+            ShowDigit(gameObject); // Show a single gameObject from the solution
+            yield return new WaitForSeconds(levelState.objectDuration); // Wait until showing next gameObject
         }
-        ClearDigitLabel(); // Dont show the last digit after the wait
+        ClearDigitLabel(); // Dont show the last gameObject after the wait
         SetAllowUserInput(levelState, true); // After showing the solution, allow user input again
     }
 
@@ -223,10 +223,10 @@ public class SequenceDisplayer : MonoBehaviour
     }
 
 
-    void ShowDigit(int digit)   
+    void ShowDigit(int gameObject)   
     {
-        label.sprite = pics[digit];
-        Debug.LogFormat(this, "[SequenceDisplayer] ShowDigit: {0}", digit);
+        label.sprite = pics[gameObject];
+        Debug.LogFormat(this, "[SequenceDisplayer] ShowDigit: {0}", gameObject);
     }
 
     void ClearDigitLabel()
@@ -241,7 +241,7 @@ public class SequenceDisplayer : MonoBehaviour
       //  Debug.LogFormat(this, "[SequenceDisplayer] ChangeUserInput: Allowed = {0}", levelState.allowUserInput);
     }
 
-    public void HandleDigitPressed(int digitPressed)
+    public void HandleDigitPressed(int objectPressed)
     {
         LevelState levelState = sessionState.GetCurrentLevelState();
         if (levelState == null || levelState.allowUserInput == false)
@@ -249,10 +249,10 @@ public class SequenceDisplayer : MonoBehaviour
          //   Debug.LogFormat(this, "[SequenceDisplayer] Blocked Press Digit, user input is not allowed!");
             return; // User not allowed to press yet
         }
-        PressDigit(levelState, digitPressed);
+        PressDigit(levelState, objectPressed);
     }
 
-    public void PressDigit(LevelState levelState, int digitPressed)
+    public void PressDigit(LevelState levelState, int objectPressed)
     {
         string solutionString = string.Join("", levelState.solution.Select(d => d.ToString()).ToArray());
         string inputString = string.Join("", levelState.input.Select(d => d.ToString()).ToArray());
@@ -262,9 +262,9 @@ public class SequenceDisplayer : MonoBehaviour
         string solutionStoredString = string.Join("", levelState.solution.Select(d => d.ToString()).ToArray());
         //Debug.Log(solutionStoredString);
 
-        levelState.input.Add(digitPressed);
+        levelState.input.Add(objectPressed);
         
-      //  Debug.LogFormat(this, "[SequenceDisplayer] Press digit: {0}", digitPressed);
+      //  Debug.LogFormat(this, "[SequenceDisplayer] Press gameObject: {0}", objectPressed);
         if (RequireAdditionalInputDigits(levelState) == false)
         {
             bool solutionIsCorrect = CheckSolution(levelState);
@@ -298,7 +298,7 @@ public class SequenceDisplayer : MonoBehaviour
             if (sessionState.levelFailsInARow == 2 && !conditionForBackwardsGameMode)
             {
                 StartCoroutine("ShowReverseMessage");
-                sessionState.difficulty = 1; // once the player goes to reverse mode, we want them to start from first level with 2 digits
+                sessionState.difficulty = 1; // once the player goes to reverse mode, we want them to start from first level with 2 objects
             }
             conditionForBackwardsGameMode = true;
            
@@ -332,9 +332,9 @@ public class SequenceDisplayer : MonoBehaviour
 
     bool RequireAdditionalInputDigits(LevelState levelState)
     {
-        if (levelState.input.Count < levelState.solution.Count) // We havent given enough input digits yet
+        if (levelState.input.Count < levelState.solution.Count) // We havent given enough input objects yet
         {
-         //   Debug.Log("Not enough input digits.");
+         //   Debug.Log("Not enough input objects.");
             return true; // We need more
         }
         return false;
@@ -360,7 +360,7 @@ public class SequenceDisplayer : MonoBehaviour
         {
             int solutionDigit = levelState.solution[i];
             int inputDigit = levelState.input[i];
-            if (inputDigit != solutionDigit) // Input digit doesnt match solution digit
+            if (inputDigit != solutionDigit) // Input gameObject doesnt match solution gameObject
             {
                 // Debug.Log("Input does not match the solution.");
                 StartCoroutine(showXmark());
